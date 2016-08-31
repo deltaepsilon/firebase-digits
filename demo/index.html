@@ -1,0 +1,74 @@
+<html>
+
+<head>
+  <script id="digits-sdk" src="https://cdn.digits.com/1/sdk.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase.js"></script>
+  <script>
+    // Initialize Firebase
+    var config = {
+      apiKey: "AIzaSyBP5EaFCQ0yAbcvYozyKCwKJ2Wf-yioCs4",
+      authDomain: "quiver-two.firebaseapp.com",
+      databaseURL: "https://quiver-two.firebaseio.com",
+      storageBucket: "quiver-two.appspot.com",
+    };
+    firebase.initializeApp(config);
+  </script>
+</head>
+
+<body>
+  <button id="loginButton" onclick="logIn()">Log In</button>
+  <button id="logoutButton" onclick="logOut()">Log Out</button>
+  <script>
+    /* Initialize Digits for Web using your application's consumer key that Fabric generated */
+    Digits.init({ consumerKey: 'P9yPbzXusrtrWYUVFDmepZYOq' });
+
+    firebase.auth().onAuthStateChanged(function(user) {
+      console.log('auth state changed:', user);
+      loginButton.style.display = user ? 'none' : '';
+      logoutButton.style.display = user ? '' : 'none';
+    });
+
+    function logOut() {
+      firebase.auth().signOut();
+    };
+    
+    function logIn() {
+      if (!Digits.isInitialized()) {
+        return console.log('Digits not initialized.');
+      } else {
+        var ref = firebase.database().ref('digits');
+        Digits.logIn()
+          .done(function(res) {
+            var loginRef = ref.child('logins').push();
+
+            loginRef.remove()
+              .then(function() {
+                return loginRef.set(res.oauth_echo_headers);    
+              })
+              .then(function () {
+                return new Promise(function(resolve, reject) {
+                  var handler = loginRef.on('child_added', function(snap) {
+                    var value = snap.val();
+                    if (snap.key == 'error') {
+                      loginRef.off('child_added', handler);
+                      return reject(value);
+                    } else if (snap.key == 'token') {
+                      loginRef.off('child_added', handler);
+                      return firebase.auth().signInWithCustomToken(value).then(resolve, reject);
+                    } 
+                  });  
+                });
+              })
+              .catch(function (err) {
+                throw new Error(err);
+              });
+          })
+          .fail(function(err) {
+            console.log('Digits login fail', err);
+          });
+      }
+    };
+  </script>
+</body>
+
+</html>

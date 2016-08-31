@@ -1,0 +1,33 @@
+{
+  "name": "firebase-digits",
+  "version": "1.0.0",
+  "description": "A custom auth integration for Firebase and Twitter Digits",
+  "main": "firebase-digits.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deltaepsilon/firebase-digits.git"
+  },
+  "keywords": [
+    "twitter",
+    "digits",
+    "fabric",
+    "firebase",
+    "authentication"
+  ],
+  "author": "Chris Esplin <chris@quiver.is>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/deltaepsilon/firebase-digits/issues"
+  },
+  "homepage": "https://github.com/deltaepsilon/firebase-digits#readme",
+  "devDependencies": {
+    "express": "^4.14.0"
+  },
+  "dependencies": {
+    "axios": "^0.14.0",
+    "firebase": "^3.3.0"
+  }
+}
