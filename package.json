@@ -1,6 +1,6 @@
 {
   "name": "firebase-digits",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A custom auth integration for Firebase and Twitter Digits",
   "main": "firebase-digits.js",
   "scripts": {

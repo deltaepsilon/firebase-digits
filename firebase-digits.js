@@ -13,21 +13,28 @@ module.exports = function FirebaseDigits(firebase, path) {
     var credentials = login['X-Verify-Credentials-Authorization'];
 
     // Move stray tokens for debugging/cleanup
-    if (typeof login.token != 'undefined') return ref.child(`unhandledTokens/${snap.key}`)
-      .set(login)
+    if (typeof login.token != 'undefined') return ref.child('unhandledTokens')
+      .push((login.uid = snap.key, login))
       .then(function () {
         return loginRef.remove();
       });
 
     // Move unhandled errors for debugging/cleanup
-    if (typeof login.error != 'undefined') return ref.child(`unhandledErrors/${snap.key}`)
-      .set(login)
+    if (typeof login.error != 'undefined') return ref.child('unhandledErrors')
+      .push((login.uid = snap.key, login))
       .then(function () {
         return loginRef.remove();
       });
 
     // Auth with Twitter
-    if (serviceProvider && credentials) return axios.get(serviceProvider, {
+    if (serviceProvider && credentials) return verify(serviceProvider, credentials, loginRef);
+
+    // Handle incomplete record
+    return Promise.reject('Record incomplete');
+  };
+
+  function verify(serviceProvider, credentials, loginRef) {
+    return axios.get(serviceProvider, {
       headers: {
         Authorization: credentials
       }
@@ -43,11 +50,8 @@ module.exports = function FirebaseDigits(firebase, path) {
       })
       .catch(function (err) {
         firebaseDigits.emit('error', err);
-        loginRef.child('error').set(err.toString());
+        return loginRef.child('error').set(err.toString());
       });
-
-    // Handle incomplete record
-    return Promise.reject('Record incomplete');
   };
 
   // Add functionality to firebaseDigits
@@ -57,6 +61,7 @@ module.exports = function FirebaseDigits(firebase, path) {
   firebaseDigits.stop = function stop() {
     return ref.child('logins').off('child_added', childAddedHandler);
   };
+  firebaseDigits.verify = verify;
 
   return firebaseDigits;
 };

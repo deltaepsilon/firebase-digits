@@ -23,9 +23,12 @@
     Digits.init({ consumerKey: 'P9yPbzXusrtrWYUVFDmepZYOq' });
 
     firebase.auth().onAuthStateChanged(function(user) {
+      if (!user) {
+        firebase.auth().signInAnonymously();
+      }
       console.log('auth state changed:', user);
-      loginButton.style.display = user ? 'none' : '';
-      logoutButton.style.display = user ? '' : 'none';
+      loginButton.style.display = user && !user.isAnonymous ? 'none' : '';
+      logoutButton.style.display = user && !user.isAnonymous ? '' : 'none';
     });
 
     function logOut() {
@@ -39,7 +42,8 @@
         var ref = firebase.database().ref('digits');
         Digits.logIn()
           .done(function(res) {
-            var loginRef = ref.child('logins').push();
+            var uid = firebase.auth().currentUser.uid;
+            var loginRef = ref.child('logins').child(uid);
 
             loginRef.remove()
               .then(function() {
